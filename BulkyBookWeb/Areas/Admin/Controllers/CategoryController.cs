@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using NuGet.Packaging.Signing;
 
 
-namespace BulkyBookWeb.Controllers
+namespace BulkyBookWeb.Areas.Admin.Controllers
 {
     public class CategoryController : Controller
     {
@@ -19,12 +19,12 @@ namespace BulkyBookWeb.Controllers
         public IActionResult Index()
         {
             IEnumerable<Category> objCategoryList = _unitOfWork.Category.GetAll();
-            return View(objCategoryList); 
+            return View(objCategoryList);
         }
 
         //GET Method
         public IActionResult Create()
-        { 
+        {
             return View();
         }
 
@@ -33,7 +33,7 @@ namespace BulkyBookWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(Category obj)
         {
-            if(obj.Name == obj.DisplayOrder.ToString())
+            if (obj.Name == obj.DisplayOrder.ToString())
             {
                 ModelState.AddModelError("name", "The DisplayOrder cannot match the Name.");
             }
@@ -45,13 +45,13 @@ namespace BulkyBookWeb.Controllers
                 return RedirectToAction("Index");
             }
             return View(obj);
-            
+
         }
 
         //GET Method
         public IActionResult Edit(int? id)
         {
-            if(id == null || id == 0)
+            if (id == null || id == 0)
             {
                 return NotFound();
             }
