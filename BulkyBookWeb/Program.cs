@@ -13,7 +13,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 
     ));
 
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+//Unit of work call here
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 var app = builder.Build();
