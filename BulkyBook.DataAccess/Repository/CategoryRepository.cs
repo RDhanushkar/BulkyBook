@@ -16,11 +16,12 @@ namespace BulkyBook.DataAccess.Repository
         {
             _db = db;
         }
-        public void Save()
-        {
-            //throw new NotImplementedException();
-            _db.SaveChanges();
-        }
+        //unit of work will contain save class
+        //public void Save()
+        //{
+        //    //throw new NotImplementedException();
+        //    _db.SaveChanges();
+        //}
 
         public void Update(Category obj)
         {
