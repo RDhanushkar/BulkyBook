@@ -1,6 +1,6 @@
 ﻿@model BulkyBook.Models.ViewModels.ProductVM
 
-<form method="post" asp-action="Upsert">
+<form method="post" asp-action="Upsert" enctype="multipart/form-data">
 
     <div class="border p-3 mt-4 row">
         <div class="row pb-2">
@@ -63,8 +63,8 @@
 
         <div class="mb-3">
             <label asp-for="Product.ImageUrl"></label>
-            <input type="file" id="uploadBox" class="form-control" />
-            @*<span asp-validation-for="Product.ImageUrl" class="text-danger"></span>*@
+            <input type="file" id="uploadBox" name="file"  class="form-control" />
+            
         </div>
 
         <div class="mb-3 col-6">
