@@ -61,7 +61,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
         //POST Method
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Upsert(CoverType obj)
+        public IActionResult Upsert(ProductVM obj, IFormFile file)
         {
             //if (obj.Name == obj.DisplayOrder.ToString())
             //{
@@ -69,7 +69,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
             //}
             if (ModelState.IsValid)
             {
-                _unitOfWork.CoverType.Update(obj);
+                //_unitOfWork.CoverType.Update(obj);
                 _unitOfWork.Save();
                 TempData["success"] = "Cover Type updated successfully";
                 return RedirectToAction("Index");
