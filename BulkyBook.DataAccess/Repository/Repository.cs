@@ -1,8 +1,9 @@
 ﻿using BulkyBook.DataAccess.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
+//using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -14,30 +15,51 @@ namespace BulkyBook.DataAccess.Repository
     {
         private readonly ApplicationDbContext _db;
 
-        internal Microsoft.EntityFrameworkCore.DbSet<T> dbSet;
+        internal DbSet<T> dbSet;
 
 
         public Repository(ApplicationDbContext db)
         {
             _db = db;
+            _db.Products.Include(u => u.Category).Include(u => u.CoverType); //noted
             this.dbSet = _db.Set<T>();
         }
         public void Add(T entity)
         {
             dbSet.Add(entity);
         }
-
-        public IEnumerable<T> GetAll()
+        public T Get(int id)
+        {
+            return dbSet.Find(id);
+        }
+        public IEnumerable<T> GetAll(string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
+           
+
+            if (includeProperties != null)
+            {
+                foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProp);
+                }
+            }
             return query.ToList();
         }
 
-        public T GetFirstOrDefault(Expression<Func<T, bool>> filter)
+        public T GetFirstOrDefault(Expression<Func<T, bool>> filter, string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
 
             query = query.Where(filter);
+           
+            if (includeProperties != null)
+            {
+                foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProp);
+                }
+            }
 
             return query.FirstOrDefault();
         }
