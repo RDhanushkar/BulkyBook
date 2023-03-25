@@ -59,7 +59,8 @@ function Delete(url) {
                     success: function (data)
                     {
                         if (data.success) {
-                            dataTable.ajax.reload();
+                            /*console.log(data)*/
+                            $('#tblData').DataTable().ajax.reload();
                             toastr.success(data.message);
                         }
                         else {
