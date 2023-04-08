@@ -8,6 +8,7 @@ namespace BulkyBook.Models.ViewModels
 {
 	public class ShoppingCardVM
 	{
-		public IEnumerable<ShoppingCard> ListCard { get; set; }
+		public IEnumerable<ShoppingCard> ListCard { get; set; }   
+		public double CardTotal { get; set; }
 	}
 }
