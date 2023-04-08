@@ -35,8 +35,63 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             {
                 card.Price = GetPriceBasedOnQuantity(card.Count, card.Product.Price,
                     card.Product.Price50, card.Product.Price100);
+                ShoppingCardVM.CardTotal += (card.Price * card.Count);
             }
 			return View(ShoppingCardVM);
+        }
+
+		public IActionResult Summary()
+		{
+            //var claimsIdentity = (ClaimsIdentity)User.Identity;
+            //var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
+            //ShoppingCardVM = new ShoppingCardVM
+            //{
+            //	ListCard = _unitOfWork.ShoppingCard.GetAll(u => u.ApplicationUserId == claim.Value,
+            //	includeProperties: "Product")
+            //	//facific users shpping item must be fiters for this function 
+            //	//we could change getall() method into filter
+            //};
+            //foreach (var card in ShoppingCardVM.ListCard)
+            //{
+            //	card.Price = GetPriceBasedOnQuantity(card.Count, card.Product.Price,
+            //		card.Product.Price50, card.Product.Price100);
+            //	ShoppingCardVM.CardTotal += (card.Price * card.Count);
+            //}
+            //return View(ShoppingCardVM);
+            return View();
+		}
+
+		public IActionResult Plus(int cardId)
+		{
+			var card = _unitOfWork.ShoppingCard.GetFirstOrDefault(u => u.Id == cardId);
+			_unitOfWork.ShoppingCard.IncrementCount(card, 1);
+			_unitOfWork.Save();
+			return RedirectToAction(nameof(Index));
+
+		}
+        public IActionResult Minus(int cardId)
+        {
+            var card = _unitOfWork.ShoppingCard.GetFirstOrDefault(u => u.Id == cardId);
+            if (card.Count <= 1)
+            {
+                _unitOfWork.ShoppingCard.Remove(card);
+            }
+            else
+            {
+                _unitOfWork.ShoppingCard.DecrementCount(card, 1);
+            }
+            _unitOfWork.Save();
+            return RedirectToAction(nameof(Index));
+
+        }
+        public IActionResult Remove(int cardId)
+        {
+            var card = _unitOfWork.ShoppingCard.GetFirstOrDefault(u => u.Id == cardId);
+            _unitOfWork.ShoppingCard.Remove(card);
+            _unitOfWork.Save();
+            return RedirectToAction(nameof(Index));
+
         }
 
         private double GetPriceBasedOnQuantity(double quantity, double price, double price50, double price100)

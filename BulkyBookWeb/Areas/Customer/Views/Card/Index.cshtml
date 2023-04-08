@@ -39,17 +39,17 @@
 							</div>
 							<div class="col-6 col-sm-4 col-lg-6 pt-2">
 								<div class="w-75 btn-group" role="group">
-									<a asp-action="plus" asp-route-cartId="" class="btn btn-primary">
+									<a asp-action="plus" asp-route-cardId="@item.Id" class="btn btn-primary">
 										<i class="bi bi-plus-square"></i>
 									</a> &nbsp;
-									<a asp-action="minus" asp-route-cartId="" class="btn btn-warning">
+									<a asp-action="minus" asp-route-cardId="@item.Id" class="btn btn-warning">
 										<i class="bi bi-dash-square"></i>
 									</a>
 								</div>
 
 							</div>
 							<div class="col-2 col-sm-4 col-lg-2 text-right pt-2">
-								<a asp-action="remove" asp-route-cartId="" class="btn btn-danger">
+								<a asp-action="remove" asp-route-cardId="@item.Id" class="btn btn-danger">
 									<i class="bi bi-trash-fill"></i>
 								</a>
 							</div>
@@ -62,7 +62,7 @@
 						<ul class="list-group">
 							<li class="list-group-item d-flex justify-content-between bg-light">
 								<span class="text-info"> Total (USD)</span>
-								<strong class="text-info">$$$</strong>
+								<strong class="text-info">@Model.CardTotal.ToString("c")</strong>
 							</li>
 						</ul>
 					</div>
