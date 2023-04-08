@@ -29,4 +29,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
     public DbSet<Company> Companys { get; set; }
+
+    public DbSet<ShoppingCard> ShoppingCards { get; set; }
+
 }
