@@ -20,16 +20,12 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         // Add your customizations after calling base.OnModelCreating(builder);
     }
     public DbSet<Category> Categories { get; set; }
-
     public DbSet<CoverType> CoverTypes { get; set; }
-
-    //public DbSet<CoverType> CoverTypes { get; set; }
     public DbSet<Product> Products { get; set; }
-
     public DbSet<ApplicationUser> ApplicationUsers { get; set; }
-
     public DbSet<Company> Companys { get; set; }
-
     public DbSet<ShoppingCard> ShoppingCards { get; set; }
+    public DbSet<OrderHeader> OrderHeaders { get; set; }
+    public DbSet<OrderDetail> OrderDetails { get; set; }
 
 }
