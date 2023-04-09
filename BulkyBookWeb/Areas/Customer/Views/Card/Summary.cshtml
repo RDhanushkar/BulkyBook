@@ -1,4 +1,7 @@
 ﻿@model BulkyBook.Models.ViewModels.ShoppingCardVM
+@using Microsoft.Extensions.Options
+@inject IOptions<BulkyBook.Utility.StripeSettings> Stripe
+
 
 <form method="post">
 	<br />
