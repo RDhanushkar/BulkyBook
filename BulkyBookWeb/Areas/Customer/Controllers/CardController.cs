@@ -1,5 +1,7 @@
 ﻿using BulkyBook.DataAccess.Repository.IRepository;
+using BulkyBook.Models;
 using BulkyBook.Models.ViewModels;
+using BulkyBook.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -27,39 +29,93 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             ShoppingCardVM = new ShoppingCardVM
             {
                 ListCard = _unitOfWork.ShoppingCard.GetAll(u => u.ApplicationUserId == claim.Value,
-                includeProperties: "Product")
+                includeProperties: "Product"),
                 //facific users shpping item must be fiters for this function 
                 //we could change getall() method into filter
+                OrderHeader = new()
             };
             foreach(var card in ShoppingCardVM.ListCard)
             {
                 card.Price = GetPriceBasedOnQuantity(card.Count, card.Product.Price,
                     card.Product.Price50, card.Product.Price100);
-                ShoppingCardVM.CardTotal += (card.Price * card.Count);
+                ShoppingCardVM.OrderHeader.OrderTotal += (card.Price * card.Count);
             }
 			return View(ShoppingCardVM);
         }
 
 		public IActionResult Summary()
 		{
-            //var claimsIdentity = (ClaimsIdentity)User.Identity;
-            //var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
 
-            //ShoppingCardVM = new ShoppingCardVM
-            //{
-            //	ListCard = _unitOfWork.ShoppingCard.GetAll(u => u.ApplicationUserId == claim.Value,
-            //	includeProperties: "Product")
-            //	//facific users shpping item must be fiters for this function 
-            //	//we could change getall() method into filter
-            //};
-            //foreach (var card in ShoppingCardVM.ListCard)
-            //{
-            //	card.Price = GetPriceBasedOnQuantity(card.Count, card.Product.Price,
-            //		card.Product.Price50, card.Product.Price100);
-            //	ShoppingCardVM.CardTotal += (card.Price * card.Count);
-            //}
-            //return View(ShoppingCardVM);
+            ShoppingCardVM = new ShoppingCardVM
+            {
+                ListCard = _unitOfWork.ShoppingCard.GetAll(u => u.ApplicationUserId == claim.Value,
+                includeProperties: "Product"),
+                OrderHeader = new()
+
+            };
+            ShoppingCardVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.GetFirstOrDefault(
+                u => u.Id == claim.Value);
+            ShoppingCardVM.OrderHeader.Name = ShoppingCardVM.OrderHeader.ApplicationUser.Name;
+            ShoppingCardVM.OrderHeader.PhoneNumber = ShoppingCardVM.OrderHeader.ApplicationUser.PhoneNumber;
+            ShoppingCardVM.OrderHeader.StreetAddress = ShoppingCardVM.OrderHeader.ApplicationUser.StreetAddress;
+            ShoppingCardVM.OrderHeader.City = ShoppingCardVM.OrderHeader.ApplicationUser.City;
+            ShoppingCardVM.OrderHeader.State = ShoppingCardVM.OrderHeader.ApplicationUser.State;
+            ShoppingCardVM.OrderHeader.PostalCode = ShoppingCardVM.OrderHeader.ApplicationUser.PostalCode;
+
+            foreach (var card in ShoppingCardVM.ListCard)
+            {
+                card.Price = GetPriceBasedOnQuantity(card.Count, card.Product.Price,
+                    card.Product.Price50, card.Product.Price100);
+                ShoppingCardVM.OrderHeader.OrderTotal += (card.Price * card.Count);
+            }
+            return View(ShoppingCardVM);
             return View();
+		}
+
+        [HttpPost]
+        [ActionName("Summary")]
+        [ValidateAntiForgeryToken]
+		public IActionResult SummaryPOST(ShoppingCardVM ShoppingCardVM)
+		{
+			var claimsIdentity = (ClaimsIdentity)User.Identity;
+			var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            ShoppingCardVM.ListCard = _unitOfWork.ShoppingCard.GetAll(u => u.ApplicationUserId == claim.Value,
+                includeProperties: "Product");
+
+            ShoppingCardVM.OrderHeader.PaymentStatus = SD.PaymentStatusPending;
+            ShoppingCardVM.OrderHeader.OrderStatus = SD.StatusPending;
+            ShoppingCardVM.OrderHeader.OrderDate = System.DateTime.Now;
+            ShoppingCardVM.OrderHeader.ApplicationUserId = claim.Value;
+
+			foreach (var card in ShoppingCardVM.ListCard)
+			{
+				card.Price = GetPriceBasedOnQuantity(card.Count, card.Product.Price,
+					card.Product.Price50, card.Product.Price100);
+				ShoppingCardVM.OrderHeader.OrderTotal += (card.Price * card.Count);
+			}
+            
+            _unitOfWork.OrderHeader.Add(ShoppingCardVM.OrderHeader);
+            _unitOfWork.Save();
+
+			foreach (var card in ShoppingCardVM.ListCard)
+			{
+                OrderDetail orderDetail = new()
+                {
+                    ProductId = card.ProductId,
+                    OrderId = ShoppingCardVM.OrderHeader.Id,
+                    Price = card.Price,
+                    Count = card.Count,
+                };
+                _unitOfWork.OrderDetail.Add(orderDetail);
+                _unitOfWork.Save();
+			}
+
+            _unitOfWork.ShoppingCard.RemoveRange(ShoppingCardVM.ListCard);
+            _unitOfWork.Save();
+            return RedirectToAction("Index", "Home");
+			
 		}
 
 		public IActionResult Plus(int cardId)
