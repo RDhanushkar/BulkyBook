@@ -4,15 +4,14 @@ using BulkyBook.Models.ViewModels;
 using BulkyBook.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NuGet.DependencyResolver;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
+
 
 namespace BulkyBookWeb.Areas.Admin.Controllers
 {
 	[Area("Admin")]
-	[Authorize]
+	[Authorize(Roles ="Admin")]
 	public class OrderController : Controller
 	{
 		private readonly IUnitOfWork _unitOfWork;
@@ -36,48 +35,44 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
         }
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult UpdateOrderDetail()
+		public IActionResult UpdateOrderDetail(OrderMV orderMV)
 		{
-			//var orderHeaderFromDb = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == OrderMV.OrderHeader.Id, tracked:false);
-			//orderHeaderFromDb.Name = OrderMV.OrderHeader.Name;
-			//orderHeaderFromDb.PhoneNumber = OrderMV.OrderHeader.PhoneNumber;
-			//orderHeaderFromDb.StreetAddress = OrderMV.OrderHeader.StreetAddress;
-			//orderHeaderFromDb.City = OrderMV.OrderHeader.City;
-			//orderHeaderFromDb.State = OrderMV.OrderHeader.State;
-			//orderHeaderFromDb.PostalCode = OrderMV.OrderHeader.PostalCode;
-			//if (OrderMV.OrderHeader.Carrier != null)
-			//{
-			//	orderHeaderFromDb.Carrier = OrderMV.OrderHeader.Carrier;
-			//}
-			//if (OrderMV.OrderHeader.TrackingNumber != null)
-			//{
-			//	orderHeaderFromDb.TrackingNumber = OrderMV.OrderHeader.TrackingNumber;
-			//}
-			////_unitOfWork.OrderHeader.Update(orderHeaderFromDb);
-			//_unitOfWork.Save();
-			//TempData["Success"] = "Order Details Updated Successfully.";
-			//return RedirectToAction("Details", "Order", new { orderId = orderHeaderFromDb.Id });
-			var orderHEaderFromDb = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == OrderMV.OrderHeader.Id, tracked: false);
-			orderHEaderFromDb.Name = OrderMV.OrderHeader.Name;
-			orderHEaderFromDb.PhoneNumber = OrderMV.OrderHeader.PhoneNumber;
-			orderHEaderFromDb.StreetAddress = OrderMV.OrderHeader.StreetAddress;
-			orderHEaderFromDb.City = OrderMV.OrderHeader.City;
-			orderHEaderFromDb.State = OrderMV.OrderHeader.State;
-			orderHEaderFromDb.PostalCode = OrderMV.OrderHeader.PostalCode;
-			if (OrderMV.OrderHeader.Carrier != null)
+			OrderMV = new OrderMV()
 			{
-				orderHEaderFromDb.Carrier = OrderMV.OrderHeader.Carrier;
-			}
-			if (OrderMV.OrderHeader.TrackingNumber != null)
+				OrderHeader = orderMV.OrderHeader,
+				OrderDetail = orderMV.OrderDetail
+			};
+			var orderHeaderFromDb = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == orderMV.OrderHeader.Id);
+			if (orderHeaderFromDb != null)
 			{
-				orderHEaderFromDb.TrackingNumber = OrderMV.OrderHeader.TrackingNumber;
+				orderHeaderFromDb.Name = orderMV.OrderHeader.Name;
+				orderHeaderFromDb.PhoneNumber = orderMV.OrderHeader.PhoneNumber;
+				orderHeaderFromDb.StreetAddress = orderMV.OrderHeader.StreetAddress;
+				orderHeaderFromDb.City = orderMV.OrderHeader.City;
+				orderHeaderFromDb.State = orderMV.OrderHeader.State;
+				orderHeaderFromDb.PostalCode = orderMV.OrderHeader.PostalCode;
+				if (orderMV.OrderHeader.Carrier != null)
+				{
+					orderHeaderFromDb.Carrier = orderMV.OrderHeader.Carrier;
+				}
+				if (orderMV.OrderHeader.TrackingNumber != null)
+				{
+					orderHeaderFromDb.TrackingNumber = orderMV.OrderHeader.TrackingNumber;
+				}
+				_unitOfWork.OrderHeader.Update(orderHeaderFromDb);
+				_unitOfWork.Save();
+				TempData["Success"] = "Order Details Updated Successfully.";
+				return RedirectToAction("Details", "Order", new { orderId = orderHeaderFromDb.Id });
 			}
-			_unitOfWork.OrderHeader.Update(orderHEaderFromDb);
-			_unitOfWork.Save();
-			TempData["Success"] = "Order Details Updated Successfully.";
-			return RedirectToAction("Details", "Order", new { orderId = orderHEaderFromDb.Id });
+			else
+			{
+				// handle the case where the orderHeaderFromDb is null
+				return NotFound();
+			}
 
 		}
+
+
 		#region API CALLS
 		[HttpGet]
 		public IActionResult GetAll(string status)
