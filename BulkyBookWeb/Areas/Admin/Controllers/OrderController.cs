@@ -42,7 +42,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
 				OrderHeader = orderMV.OrderHeader,
 				OrderDetail = orderMV.OrderDetail
 			};
-			var orderHeaderFromDb = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == orderMV.OrderHeader.Id);
+			var orderHeaderFromDb = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == orderMV.OrderHeader.Id, tracked:false);
 			if (orderHeaderFromDb != null)
 			{
 				orderHeaderFromDb.Name = orderMV.OrderHeader.Name;
