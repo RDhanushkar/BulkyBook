@@ -3,6 +3,7 @@ using BulkyBook.Models;
 using BulkyBook.Models.ViewModels;
 using BulkyBook.Utility;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Stripe.Checkout;
@@ -15,11 +16,15 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
     public class CardController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IEmailSender _emailSender;
         public ShoppingCardVM ShoppingCardVM { get; set; }
         public int OrderTotal { get; set; }
-        public CardController(IUnitOfWork unitOfWork)
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        public CardController(IUnitOfWork unitOfWork, IEmailSender emailSender)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             _unitOfWork = unitOfWork;
+            _emailSender = emailSender;
         }
 
         //[AllowAnonymous] it can be access by Un Authorize use(coudn't login)
@@ -187,7 +192,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
 					_unitOfWork.Save();
 				}
 			}
-
+            _emailSender.SendEmailAsync(orderHeader.ApplicationUser.Email, "New Order - Bulky Book", "<p>New Order Created. </p>");
             List<ShoppingCard> shoppingCards = _unitOfWork.ShoppingCard.GetAll(u=>u.ApplicationUserId == 
             orderHeader.ApplicationUserId).ToList();
 			_unitOfWork.ShoppingCard.RemoveRange(shoppingCards);
@@ -209,6 +214,8 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             if (card.Count <= 1)
             {
                 _unitOfWork.ShoppingCard.Remove(card);
+                var count = _unitOfWork.ShoppingCard.GetAll(u => u.ApplicationUserId == card.ApplicationUserId).ToList().Count - 1;
+                HttpContext.Session.SetInt32(SD.SessionCart, count);
             }
             else
             {
@@ -223,6 +230,8 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             var card = _unitOfWork.ShoppingCard.GetFirstOrDefault(u => u.Id == cardId);
             _unitOfWork.ShoppingCard.Remove(card);
             _unitOfWork.Save();
+            var count = _unitOfWork.ShoppingCard.GetAll(u => u.ApplicationUserId == card.ApplicationUserId).ToList().Count;
+            HttpContext.Session.SetInt32(SD.SessionCart, count);
             return RedirectToAction(nameof(Index));
 
         }
